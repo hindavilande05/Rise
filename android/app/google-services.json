@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "69841653842",
+    "project_id": "rise-79e49",
+    "storage_bucket": "rise-79e49.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:69841653842:android:ed43b3afb2d3d00c338f8b",
+        "android_client_info": {
+          "package_name": "com.rise"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "69841653842-ecu5g8fkd34lav5qhmtrbnm3lqoof0ar.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rise",
+            "certificate_hash": "0100b6c79eb78664ba7d9405f00adf65a117b0e1"
+          }
+        },
+        {
+          "client_id": "69841653842-24bq4babevhcbjkhlqdtou721dl5cir6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyASA2lZpG7OpRqXcNjHXnIKf6iCeRKd4uk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "69841653842-24bq4babevhcbjkhlqdtou721dl5cir6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
