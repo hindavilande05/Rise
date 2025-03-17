@@ -83,7 +83,7 @@ const HomeScreen = () => {
 
   return (
     <ImageBackground
-      source={require('../assets/img/bg.jpg')}
+      source={require('../../assets/img/bg.jpg')}
       style={styles.bgImgContainer}>
       <ScrollView
         style={styles.scrollContainer}

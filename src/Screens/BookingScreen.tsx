@@ -27,13 +27,13 @@ interface SelectedOptions {
 const vehicleTypes = ['2 Wheeler', '4 Wheeler', 'Heavy Vehicle'];
 const connectionTypes = ['Type 1', 'Type 2', 'CCS', 'CHAdeMO'];
 const vehicleModels = [
-  {name: 'Mercedes Benz EQS', image: require('../assets/img/car1.jpg')},
-  {name: 'Audi Q8 e-tron', image: require('../assets/img/car1.jpg')},
-  {name: 'Hyundai Ioniq 5', image: require('../assets/img/car1.jpg')},
-  {name: 'BMW i7', image: require('../assets/img/car1.jpg')},
-  {name: 'BYD Atto 3', image: require('../assets/img/car1.jpg')},
-  {name: 'TATA Nexon EV', image: require('../assets/img/car1.jpg')},
-  {name: 'Tesla Model X', image: require('../assets/img/car1.jpg')},
+  {name: 'Mercedes Benz EQS', image: require('../../assets/img/car1.jpg')},
+  {name: 'Audi Q8 e-tron', image: require('../../assets/img/car1.jpg')},
+  {name: 'Hyundai Ioniq 5', image: require('../../assets/img/car1.jpg')},
+  {name: 'BMW i7', image: require('../../assets/img/car1.jpg')},
+  {name: 'BYD Atto 3', image: require('../../assets/img/car1.jpg')},
+  {name: 'TATA Nexon EV', image: require('../../assets/img/car1.jpg')},
+  {name: 'Tesla Model X', image: require('../../assets/img/car1.jpg')},
 ];
 
 const BookingScreen = () => {
@@ -88,9 +88,14 @@ const BookingScreen = () => {
     }
   };
 
+
+  function handleNext(selectedOptions: SelectedOptions): void {
+    navigation.navigate('BookingConfirm', {selectedOptions});
+  }
+
   return (
     <ImageBackground
-      source={require('../assets/img/bg.jpg')}
+      source={require('../../assets/img/bg.jpg')}
       style={styles.bgImgContainer}>
       <View style={styles.container}>
         {/* Header */}
@@ -194,7 +199,7 @@ const BookingScreen = () => {
         )}
 
         {/* Continue Button */}
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity onPress={() => handleNext(selectedOptions) } style={styles.button}>
           <Text style={styles.buttonText}>Continue</Text>
         </TouchableOpacity>
 

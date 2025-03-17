@@ -1,5 +1,6 @@
-import { useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React, {useState} from 'react';
+import { RootStackParamList } from '../types';
 import {
   View,
   Text,
@@ -43,7 +44,7 @@ const checkins: Checkin[] = [
     id: '1',
     user: 'Hindavi Lande',
     date: '5 days ago',
-    profilePic: require('../assets/img/profile1.jpg'),
+    profilePic: require('../../assets/img/profile1.jpg'),
     charger: 'J1772',
     chargeDone: '80%',
     comment:
@@ -54,7 +55,7 @@ const checkins: Checkin[] = [
     id: '2',
     user: 'Raj Thakare',
     date: 'Sep 24',
-    profilePic: require('../assets/img/profile2.jpg'),
+    profilePic: require('../../assets/img/profile2.jpg'),
     charger: 'Tesla Model Y',
     chargeDone: '90%',
     comment: 'Fast charging! No issues so far.',
@@ -64,7 +65,7 @@ const checkins: Checkin[] = [
     id: '3',
     user: 'Gargi',
     date: 'Sep 22',
-    profilePic: require('../assets/img/profile1.jpg'),
+    profilePic: require('../../assets/img/profile1.jpg'),
     charger: 'J1772',
     chargeDone: '60%',
     comment:
@@ -75,7 +76,7 @@ const checkins: Checkin[] = [
     id: '4',
     user: 'Avi',
     date: 'Sep 18',
-    profilePic: require('../assets/img/profile2.jpg'),
+    profilePic: require('../../assets/img/profile2.jpg'),
     charger: 'CHAdeMO',
     chargeDone: '95%',
     comment:
@@ -85,12 +86,16 @@ const checkins: Checkin[] = [
 ];
 
 const StationDetails: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const handleGetDirections = (address: string) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
     Linking.openURL(url);
   };
+
+  const handleBooking = () => {
+    navigation.navigate("BookingScreen");
+  }
 
   return (
     <View style={styles.container}>
@@ -103,7 +108,7 @@ const StationDetails: React.FC = () => {
 
         {/* Header Image */}
         <Image
-          source={require('../assets/img/ev-station2.jpeg')}
+          source={require('../../assets/img/ev-station2.jpeg')}
           style={styles.headerImage}
         />
 
@@ -181,7 +186,7 @@ const StationDetails: React.FC = () => {
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={[styles.button, styles.bookButton]}>
+        <TouchableOpacity onPress={handleBooking} style={[styles.button, styles.bookButton]}>
         <Icon name="calendar-alt" size={16} color="#FFF" style={styles.buttonIcon} />
           <Text style={styles.buttonText}>Book Slot</Text>
         </TouchableOpacity>

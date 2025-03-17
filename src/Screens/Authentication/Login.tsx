@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -9,21 +9,22 @@ import {
   Alert,
 } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {useNavigation} from '@react-navigation/native';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 import FontAwe from 'react-native-vector-icons/FontAwesome';
 
-import auth, { signInAnonymously } from '@react-native-firebase/auth';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth';
+import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {
- 
   GoogleSigninButton,
   isErrorWithCode,
   NativeModuleError,
   statusCodes,
   User,
 } from '@react-native-google-signin/google-signin';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
@@ -38,7 +39,6 @@ type State = {
 type NavigationProps = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 const Login = () => {
-
   const state = {
     userInfo: undefined,
     error: undefined,
@@ -58,58 +58,81 @@ const Login = () => {
     });
   }, []);
 
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post(
+        'http://192.168.6.229:5000/api/auth/login',
+        {
+          email,
+          password,
+        },
+      );
+
+      const {token, user} = response.data; // Extract token and user details
+
+      // Store token securely
+      await AsyncStorage.setItem('authToken', token);
+
+      Alert.alert('Login Successful', `Welcome ${user.name}`);
+      navigation.navigate('Dashboard');
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.msg || 'Login failed');
+      } else {
+        setError('An unknown error occurred');
+      }
+    }
+  };
+
   // Google Login function
   const GoogleLogin = async () => {
-    try{
-    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-    const { type, data } = await GoogleSignin.signIn();
-    if (type === 'success') {
-      console.log({ data });
-      
-    } else {
-      // sign in was cancelled by user
-      setTimeout(() => {
-        Alert.alert('cancelled');
-      }, 500);
-    }
-  } catch (error) {
-    if (isErrorWithCode(error)) {
-      console.log('error', error.message);
-      switch (error.code) {
-        case statusCodes.IN_PROGRESS:
-          // operation (eg. sign in) already in progress
-          Alert.alert(
-            'in progress',
-            'operation (eg. sign in) already in progress',
-          );
-          break;
-        case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-          // android only
-          Alert.alert('play services not available or outdated');
-          break;
-        default:
-          Alert.alert('Something went wrong: ', error.toString());
+    try {
+      await GoogleSignin.hasPlayServices({showPlayServicesUpdateDialog: true});
+      const {type, data} = await GoogleSignin.signIn();
+      if (type === 'success') {
+        console.log({data});
+      } else {
+        // sign in was cancelled by user
+        setTimeout(() => {
+          Alert.alert('cancelled');
+        }, 500);
       }
-      
-    } else {
-      Alert.alert(`an error that's not related to google sign in occurred`);
+    } catch (error) {
+      if (isErrorWithCode(error)) {
+        console.log('error', error.message);
+        switch (error.code) {
+          case statusCodes.IN_PROGRESS:
+            // operation (eg. sign in) already in progress
+            Alert.alert(
+              'in progress',
+              'operation (eg. sign in) already in progress',
+            );
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            // android only
+            Alert.alert('play services not available or outdated');
+            break;
+          default:
+            Alert.alert('Something went wrong: ', error.toString());
+        }
+      } else {
+        Alert.alert(`an error that's not related to google sign in occurred`);
+      }
     }
-  }
   };
 
   // // // Google Login handler
   const onGoogleButtonPress = async () => {
-       setLoading(true);
-       await GoogleLogin();
-       setLoading(false);
-  }
+    setLoading(true);
+    await GoogleLogin();
+    setLoading(false);
+  };
   //   try {
   //     const response = await GoogleLogin();
   //     console.log('Google Login Response:', response);
-     
 
   //     // if (response) {
-  //     //   const idToken = response.idToken; 
+  //     //   const idToken = response.idToken;
   //     //   const user = response.user;
 
   //     //   if (idToken) {
@@ -134,7 +157,7 @@ const Login = () => {
 
   return (
     <ImageBackground
-      source={require('../../assets/login_bg.jpg')}
+      source={require('../../../assets/login_bg.jpg')}
       style={styles.background}>
       <View style={styles.overlay} />
       <View style={styles.container}>
@@ -167,7 +190,9 @@ const Login = () => {
           <Text style={styles.forgotPassword}>Forgot Password?</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('Dashboard')} style={styles.loginButton}>
+        <TouchableOpacity
+          onPress={() => handleLogin()}
+          style={styles.loginButton}>
           <Text style={styles.loginText}>Login</Text>
         </TouchableOpacity>
 
@@ -180,7 +205,9 @@ const Login = () => {
 
         <Text style={styles.orText}>Or</Text>
 
-        <TouchableOpacity onPress={onGoogleButtonPress} style={styles.googleButton}>
+        <TouchableOpacity
+          onPress={onGoogleButtonPress}
+          style={styles.googleButton}>
           <Text style={styles.googleText}>Continue to login with Google</Text>
           <FontAwe name="google" size={30} color="white" />
         </TouchableOpacity>

@@ -11,18 +11,23 @@ import {
 
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-
-import FontAwe from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
 
 type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
 };
 
-type NavigationProps = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
+type NavigationProps = NativeStackNavigationProp<
+  AuthStackParamList,
+  'Register'
+>;
 
 const Register = () => {
+  const [error, setError] = useState('');
+
   const navigation = useNavigation<NavigationProps>();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -32,35 +37,64 @@ const Register = () => {
     return emailRegex.test(email);
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!email || !password || !confirmPassword) {
-      Alert.alert('Error', 'All fields are required.');
+      Alert.alert("Error", "All fields are required.");
       return;
     }
     if (!validateEmail(email)) {
-      Alert.alert('Error', 'Invalid email format.');
+      Alert.alert("Error", "Invalid email format.");
       return;
     }
     if (password.length <= 5) {
-      Alert.alert('Error', 'Password must be more than 5 characters.');
+      Alert.alert("Error", "Password must be more than 5 characters.");
       return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match.');
+      Alert.alert("Error", "Passwords do not match.");
       return;
     }
-    
-    // Proceed with registration logic
-    Alert.alert('Success', 'Registered successfully!');
-  };
+
+    try {
+      console.log("Sending data to MongoDB...");
+      const response = await axios.post(
+        "http://192.168.6.229:5000/api/auth/register",
+        {
+          name,
+          email,
+          password,
+        }
+      );
+      console.log("MongoDB Response:", response.data);
+
+      Alert.alert("Registered Successfully");
+      navigation.navigate("Login");
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.msg || "Registration failed");
+      } else {
+        setError("An unknown error occurred");
+      }
+    }
+};
+
 
   return (
     <ImageBackground
-      source={require('../../assets/login_bg.jpg')}
+      source={require('../../../assets/login_bg.jpg')}
       style={styles.background}>
       <View style={styles.overlay} />
       <View style={styles.container}>
         <Text style={styles.title}>Register</Text>
+
+        <Text style={styles.label}>Name</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your Name"
+          placeholderTextColor="#ccc"
+          value={name}
+          onChangeText={setName}
+        />
 
         <Text style={styles.label}>Email</Text>
         <TextInput
