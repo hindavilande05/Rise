@@ -13,6 +13,8 @@ import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import axios from 'axios';
 
+import { BASE_URL } from '../../../config'
+
 type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
@@ -54,11 +56,10 @@ const Register = () => {
       Alert.alert("Error", "Passwords do not match.");
       return;
     }
-
     try {
       console.log("Sending data to MongoDB...");
       const response = await axios.post(
-        "http://192.168.6.229:5000/api/auth/register",
+        `${BASE_URL}/api/auth/register`,
         {
           name,
           email,
@@ -66,7 +67,6 @@ const Register = () => {
         }
       );
       console.log("MongoDB Response:", response.data);
-
       Alert.alert("Registered Successfully");
       navigation.navigate("Login");
     } catch (err) {

@@ -4,6 +4,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { BASE_URL } from '../../config';
 
 type RootStackParamList = {
   Profile: undefined;
@@ -16,7 +17,6 @@ const ProfileScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [userName, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -26,8 +26,7 @@ const ProfileScreen = () => {
           navigation.navigate("Login");
           return;
         }
-
-        const response = await axios.get("http://192.168.6.229:5000/api/users/profile", {
+        const response = await axios.get(`${BASE_URL}/api/users/profile`, {
           headers: { Authorization: `Bearer ${token}` } 
         });
 
@@ -39,7 +38,6 @@ const ProfileScreen = () => {
         setLoading(false);
       }
     };
-
     fetchUserProfile();
   }, []);
 
@@ -52,7 +50,6 @@ const ProfileScreen = () => {
       Alert.alert("Logout Failed", "An error occurred while logging out.");
     }
   };
-
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -60,7 +57,6 @@ const ProfileScreen = () => {
       </View>
     );
   }
-
   return (
     <View style={styles.container}>
       <Text style={styles.name}>Hello, {userName}</Text>
@@ -94,5 +90,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
-
 export default ProfileScreen;

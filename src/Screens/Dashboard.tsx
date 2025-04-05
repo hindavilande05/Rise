@@ -4,7 +4,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import HomeScreen from './HomeScreen';
 import BookingScreen from './BookingScreen';
 import ProfileScreen from './ProfileScreen';
-import MapScreen from './MapComponent/MapScreen';
+import SearchPlace from './MapComponent/SearchPlace';
+
 
 const Tab = createBottomTabNavigator();
 
@@ -37,7 +38,7 @@ const Dashboard = () => {
                     },headerShown: false,
                 })}>
                 <Tab.Screen name="Home" component={HomeScreen} />
-                <Tab.Screen name="Routes" component={MapScreen} />
+                <Tab.Screen name="Routes" component={SearchPlace} />
                 <Tab.Screen name="Booking" component={BookingScreen} />
                 <Tab.Screen name="Profile" component={ProfileScreen} />
             </Tab.Navigator>

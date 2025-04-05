@@ -4,9 +4,7 @@ import MapView, { Marker } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import axios from 'axios';
 
-
-const GO_MAPS_API_KEY = 'AlzaSyctPPvnwKRxmRIvqYVD_UuQMm7VUfLkfhL';
-
+const TOMTOM_API_KEY = 'UkAy5vXjPlyFW09VQYsnbG1PJvnMxN5B';
 
 interface Location {
   latitude: number;
@@ -16,17 +14,21 @@ interface Location {
 interface ChargingStation {
   id: string;
   name: string;
-  geometry: {
-    location: {
-      lat: number;
-      lng: number;
-    };
+  address: string;
+  position: {
+    lat: number;
+    lon: number;
   };
-} 
-const MapScreen: React.FC = () => {
-  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [chargingStations, setChargingStations] = useState<ChargingStation[]>([]);
+  connectors: {
+    connectorType: string;
+    ratedPowerKW: number;
+  }[];
+}
 
+const MapScreen: React.FC = () => {
+  const [location, setLocation] = useState<Location | null>(null);
+  const [chargingStations, setChargingStations] = useState<ChargingStation[]>([]);
+  const [selectedStation, setSelectedStation] = useState<ChargingStation | null>(null);
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -71,24 +73,32 @@ const MapScreen: React.FC = () => {
     requestLocationPermission();
   }, []);
 
-   const fetchChargingStations = async (latitude: number, longitude: number) => {
+  const fetchChargingStations = async (latitude: number, longitude: number) => {
     try {
-      const response = await axios.get(`https://maps.gomaps.pro/maps/api/place/nearbysearch/json`, {
-        params: {
-          location: `${latitude},${longitude}`,
-          radius: 5000,
-          type: 'electric_vehicle_charging_station',
-          key: GO_MAPS_API_KEY,
-        },
-      });
+      const response = await axios.get(
+        `https://api.tomtom.com/search/2/poiSearch/charging%20station.json`,
+        {
+          params: {
+            key: TOMTOM_API_KEY,
+            lat: latitude,
+            lon: longitude,
+            radius: 10000,
+          },
+        }
+      );
 
-      if (response.data.status === 'REQUEST_DENIED') {
-        console.error('Error fetching charging stations:', response.data.error_message);
-        Alert.alert('Error', `Error fetching charging stations: ${response.data.error_message}`);
-        return;
+      if (response.data.results) {
+        const stations = response.data.results.map((station: any) => ({
+          id: station.id,
+          name: station.poi.name,
+          address: station.address.freeformAddress.split(',')[0],
+          position: station.position,
+          connectors: station.chargingPark?.connectors || [],
+        }));
+        setChargingStations(stations);
+      } else {
+        console.warn('No charging stations found.');
       }
-
-      setChargingStations(response.data.results);
     } catch (error) {
       console.error('Error fetching charging stations:', error);
       Alert.alert('Error', 'Error fetching charging stations');
@@ -113,16 +123,29 @@ const MapScreen: React.FC = () => {
             pinColor="blue"
           />
 
-           {chargingStations.map((station) => (
+          {chargingStations.map((station) => (
             <Marker
               key={station.id}
-              coordinate={{ latitude: station.geometry.location.lat, longitude: station.geometry.location.lng }}
+              coordinate={{ latitude: station.position.lat, longitude: station.position.lon }}
               title={station.name}
+              onPress={() => setSelectedStation(station)}
             />
           ))}
         </MapView>
       ) : (
         <Text>Fetching location...</Text>
+      )}
+
+      {selectedStation && (
+        <View style={styles.infoCard}>
+          <Text style={styles.stationName}>{selectedStation.name}</Text>
+          <Text style={styles.stationAddress}>{selectedStation.address}</Text>
+          {selectedStation.connectors.length > 0 && (
+            <Text style={styles.connectorInfo}>
+              {`Type: ${selectedStation.connectors[0].connectorType}, Power: ${selectedStation.connectors[0].ratedPowerKW} kW`}
+            </Text>
+          )}
+        </View>
       )}
     </View>
   );
@@ -136,6 +159,28 @@ const styles = StyleSheet.create({
   },
   map: {
     ...StyleSheet.absoluteFillObject,
+  },
+  infoCard: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: 'white',
+    padding: 10,
+    borderRadius: 10,
+    elevation: 5,
+  },
+  stationName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  stationAddress: {
+    fontSize: 14,
+    color: 'gray',
+  },
+  connectorInfo: {
+    fontSize: 12,
+    marginTop: 5,
   },
 });
 

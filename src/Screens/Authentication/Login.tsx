@@ -13,18 +13,15 @@ import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 import FontAwe from 'react-native-vector-icons/FontAwesome';
-
-import auth from '@react-native-firebase/auth';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {
-  GoogleSigninButton,
   isErrorWithCode,
-  NativeModuleError,
   statusCodes,
   User,
 } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { BASE_URL } from '../../../config';
 type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
@@ -61,7 +58,7 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       const response = await axios.post(
-        'http://192.168.6.229:5000/api/auth/login',
+        `${BASE_URL}/api/auth/login`,
         {
           email,
           password,
