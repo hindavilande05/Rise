@@ -12,8 +12,5 @@ Welcome to the **Rise EV App**! This project is designed to provide real-time in
 
 
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
 
 Thank you.
