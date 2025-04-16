@@ -13,5 +13,42 @@ export type RootStackParamList = {
     HomeScreen: undefined;
     ProfileScreen: undefined;
     StationDetails: undefined;
+    PlanTrip: undefined;
+    PlanTripMapScreen: {
+      routeCoordinates: any[];
+      chargingStations: any[];
+    };
+    DirectionsScreen: {
+      startLocation: any;
+      endLocation: any;
+    }
+    SearchPlace: undefined;
+    Login: undefined;
+    Register: undefined;
+    Dashboard: undefined;
+    LongDistEVRoutes: undefined;
+    RoutingTest: undefined;
+    MapViewScreen: {
+      routeCoords: { latitude: number; longitude: number }[];
+      start: { lat: number; lon: number };
+      dest: { lat: number; lon: number };
+      chargingStations: ChargingStation[];  // Updated to include charging stations
+    };
     
+    
+   
+    
+  };
+
+  export type ChargingStation = {
+    position: {
+      lat: number;
+      lon: number;
+    };
+    poi?: {
+      name: string;
+    };
+    address?: {
+      freeformAddress: string;
+    };
   };

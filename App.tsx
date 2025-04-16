@@ -10,6 +10,12 @@ import ProfileScreen from './src/Screens/ProfileScreen';
 import BookingReceipt from './src/Screens/BookingReceipt';
 import HomeScreen from './src/Screens/HomeScreen';
 import BookingScreen from './src/Screens/BookingScreen';
+import PlanTrip from './src/Screens/PlanTrip';
+import EVRoutePlanner from './src/Screens/EVRoutePlanner';
+import LongDistEVRoutes from './src/Screens/MapComponent/LongDistEVRoutes';
+import RoutingTest from './src/Screens/RoutingTest';
+import MapViewScreen from './src/Screens/MapViewScreen';
+import SearchPlace from './src/Screens/MapComponent/SearchPlace';
 
 
 
@@ -19,7 +25,7 @@ function App(){
 
   return(
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{headerShown: false}}>
+      <Stack.Navigator screenOptions={{headerShown: false}}>  
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
         <Stack.Screen name="Dashboard" component={Dashboard} />
@@ -30,6 +36,12 @@ function App(){
         <Stack.Screen name="BookingConfirm" component={BookingConfirm} />
         <Stack.Screen name='BookingReceipt' component={BookingReceipt} />
         <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+        <Stack.Screen name="PlanTrip" component={PlanTrip} />
+        <Stack.Screen name="EVRoutePlanner" component={EVRoutePlanner} />
+        <Stack.Screen name="LongDistEVRoutes" component={LongDistEVRoutes} />
+        <Stack.Screen name="RoutingTest" component={RoutingTest}  />
+        <Stack.Screen name="MapViewScreen" component={MapViewScreen} />
+        
       </Stack.Navigator>
     </NavigationContainer>
   )

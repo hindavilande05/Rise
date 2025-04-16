@@ -41,8 +41,7 @@ const Dashboard = () => {
                 <Tab.Screen name="Routes" component={SearchPlace} />
                 <Tab.Screen name="Booking" component={BookingScreen} />
                 <Tab.Screen name="Profile" component={ProfileScreen} />
-            </Tab.Navigator>
-        
+            </Tab.Navigator>      
     );
 };
 

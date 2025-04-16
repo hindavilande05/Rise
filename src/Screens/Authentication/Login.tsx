@@ -22,6 +22,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { BASE_URL } from '../../../config';
+
 type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
@@ -65,8 +66,7 @@ const Login = () => {
         },
       );
 
-      const {token, user} = response.data; // Extract token and user details
-
+      const {token, user} = response.data; 
       // Store token securely
       await AsyncStorage.setItem('authToken', token);
 

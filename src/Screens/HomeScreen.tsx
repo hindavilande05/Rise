@@ -8,14 +8,14 @@ import {
   ImageBackground,
   ScrollView,
   StyleSheet,
+  Button,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Icon1 from 'react-native-vector-icons/FontAwesome5';
 import MapView, {Marker} from 'react-native-maps';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-
-import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
+import {RootStackParamList} from '../types';
 
 const GO_MAPS_API_KEY = 'AlzaSyctPPvnwKRxmRIvqYVD_UuQMm7VUfLkfhL';
 const routes = [
@@ -48,13 +48,6 @@ const routes = [
   },
 ];
 
-type RootStackParamList = {
-  StationDetails: undefined;
-  DirectionsScreen: {
-    startLocation: {latitude: number; longitude: number};
-    endLocation: {latitude: number; longitude: number};
-  };
-};
 
 const HomeScreen = () => {
   const navigation =
@@ -95,19 +88,34 @@ const HomeScreen = () => {
             <Text style={styles.h2}>Plan a trip</Text>
             <Text style={styles.searchLabel}>Where do you want to start?</Text>
             <View style={styles.searchInputContainer}>
-              <Icon name="map-marker" size={20} color="#000" style={styles.searchPinIcon} />
+              <Icon
+                name="map-marker"
+                size={20}
+                color="#000"
+                style={styles.searchPinIcon}
+              />
               <TextInput
                 placeholder="Start from area or location"
                 placeholderTextColor={'black'}
                 style={styles.searchInput}
-               
               />
-              <Icon name="search" size={20} color="#000" style={styles.searchIcon} />
+              <Icon
+                name="search"
+                size={20}
+                color="#000"
+                style={styles.searchIcon}
+              />
             </View>
           </View>
 
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate('RoutingTest')}>
+            <Text style={styles.buttonText}>Plan a Journey</Text>
+          </TouchableOpacity>
+
           {/* 
-<View style={styles.searchBox}>
+    <View style={styles.searchBox}>
       <Text style={styles.h2}>Plan a trip</Text>
       <Text style={styles.searchLabel}>Where do you want to start?</Text>
       <View style={styles.searchInputContainer}>
@@ -139,7 +147,6 @@ const HomeScreen = () => {
       </View>
     </View> */}
 
-        
           <Text style={styles.subHeader}>My Routes</Text>
           <FlatList
             data={routes}
@@ -239,10 +246,10 @@ const styles = StyleSheet.create({
   bgImgContainer: {
     flex: 1,
     resizeMode: 'cover',
-
     width: '100%',
     height: '100%',
   },
+  
   scrollContainer: {
     flexGrow: 1,
   },
