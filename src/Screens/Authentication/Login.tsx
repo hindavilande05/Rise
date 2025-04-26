@@ -21,7 +21,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { BASE_URL } from '../../../config';
+import {BASE_URL} from '../../../config';
 
 type AuthStackParamList = {
   Login: undefined;
@@ -57,16 +57,26 @@ const Login = () => {
   }, []);
 
   const handleLogin = async () => {
+    console.log('Login button pressed');
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter both email and password');
+      return;
+    }
+  
     try {
+      console.log('Attempting to log in with email:', email);
+      console.log('URL', BASE_URL);
       const response = await axios.post(
         `${BASE_URL}/api/auth/login`,
         {
           email,
           password,
         },
+        
       );
-
+      console.log('below response', response.data);
       const {token, user} = response.data; 
+      
       // Store token securely
       await AsyncStorage.setItem('authToken', token);
 
@@ -200,14 +210,14 @@ const Login = () => {
           </TouchableOpacity>
         </Text>
 
-        <Text style={styles.orText}>Or</Text>
+        {/* <Text style={styles.orText}>Or</Text>
 
         <TouchableOpacity
           onPress={onGoogleButtonPress}
           style={styles.googleButton}>
           <Text style={styles.googleText}>Continue to login with Google</Text>
           <FontAwe name="google" size={30} color="white" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </ImageBackground>
   );

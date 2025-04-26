@@ -6,14 +6,22 @@ import {
   StyleSheet,
   Modal,
   FlatList,
-  Image,
-  Platform,
-  ImageSourcePropType,
   ImageBackground,
+  ScrollView,
+  Alert,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {RootStackParamList} from '../types';
+import Slider from '@react-native-community/slider';
+import { useSelector } from 'react-redux';
+import { RootState } from '../Redux/store'; 
+import axios from 'axios';
+import { BASE_URL } from '../../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 interface SelectedOptions {
   vehicleType: string;
@@ -24,20 +32,35 @@ interface SelectedOptions {
   amount: string;
 }
 
+interface BookingDetails {
+  userId: string;
+  vehicleType: string;
+  vehicleModel: string;
+  connectionType: string;
+  date: string;
+  time: string;
+  amount: number;
+  estimatedKwh: string;
+}
+
 const vehicleTypes = ['2 Wheeler', '4 Wheeler', 'Heavy Vehicle'];
 const connectionTypes = ['Type 1', 'Type 2', 'CCS', 'CHAdeMO'];
 const vehicleModels = [
-  {name: 'Mercedes Benz EQS', image: require('../../assets/img/car1.jpg')},
-  {name: 'Audi Q8 e-tron', image: require('../../assets/img/car1.jpg')},
-  {name: 'Hyundai Ioniq 5', image: require('../../assets/img/car1.jpg')},
-  {name: 'BMW i7', image: require('../../assets/img/car1.jpg')},
-  {name: 'BYD Atto 3', image: require('../../assets/img/car1.jpg')},
-  {name: 'TATA Nexon EV', image: require('../../assets/img/car1.jpg')},
-  {name: 'Tesla Model X', image: require('../../assets/img/car1.jpg')},
+  {name: 'Mercedes Benz EQS'},
+  {name: 'Audi Q8 e-tron'},
+  {name: 'Hyundai Ioniq 5'},
+  {name: 'BMW i7'},
+  {name: 'BYD Atto 3'},
+  {name: 'TATA Nexon EV'},
+  {name: 'Tesla Model X'},
 ];
 
+
 const BookingScreen = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  // Get station data from Redux
+  const stationData = useSelector((state: RootState) => state.chargingStation.selectedStation);
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({
     vehicleType: '',
     vehicleModel: '',
@@ -48,9 +71,12 @@ const BookingScreen = () => {
   });
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState('');
-
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [selectedAmount, setSelectedAmount] = useState(0);
+  const [isFullCharge, setIsFullCharge] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const pricePerKwh = 10;
 
   const handleSelect = (key: keyof SelectedOptions, value: string) => {
     setSelectedOptions({...selectedOptions, [key]: value});
@@ -88,15 +114,154 @@ const BookingScreen = () => {
     }
   };
 
+  const handleFullChargeToggle = () => {
+    setIsFullCharge(!isFullCharge);
+    if (!isFullCharge) {
+      setSelectedAmount(5000);
+    } else {
+      setSelectedAmount(0);
+    }
+  };
 
-  function handleNext(selectedOptions: SelectedOptions): void {
-    navigation.navigate('BookingConfirm', {selectedOptions});
+  const calculateCharge = (amount: number) => {
+    return (amount / pricePerKwh).toFixed(2);
+  };
+
+
+  const fetchUserId = async (): Promise<string | null> => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) {
+        Alert.alert("Error", "No authentication token found. Please log in again.");
+        return null;
+      }
+
+      const response = await axios.get(`${BASE_URL}/api/users/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      return response.data?._id || null; // Assuming `_id` is the userId in the response
+    } catch (error) {
+      console.error("Error fetching user ID:", error);
+      Alert.alert("Error", "Failed to fetch user ID.");
+      return null;
+    }
+  };
+
+
+  const postBooking = async (bookingDetails: BookingDetails): Promise<any> => {
+    setLoading(true);
+    try {
+     
+      if (!stationData) {
+        console.error('No station data available in Redux');
+        return;
+      }
+      let stationId: string | undefined;
+      const existingStationResponse = await axios.get(`${BASE_URL}/api/stations`, {
+        params: {
+          name: stationData.poi?.name,
+          latitude: stationData.position.lat,
+          longitude: stationData.position.lon,
+        },
+      });
+  
+      
+  
+      if (existingStationResponse.data && existingStationResponse.data.station) {
+        // Station already exists
+        console.log('Station already exists:',  existingStationResponse.data.stations[0]);
+        stationId = existingStationResponse.data.stations[0]._id;
+      } else {
+       
+        const stationResponse = await axios.post(`${BASE_URL}/api/stations`, {
+          name: stationData.poi?.name,
+          location: {
+            latitude: stationData.position.lat,
+            longitude: stationData.position.lon,
+          },
+          address: stationData.address?.freeformAddress,
+          connectorTypes: stationData.chargingPark?.connectors.map((connector) => connector.connectorType),
+          ratedPowerKW: stationData.chargingPark?.connectors.reduce((max, connector) => Math.max(max, connector.ratedPowerKW), 0),
+          pricePerKwh: 12.5,
+        });
+  
+        if (stationResponse.data) {
+          console.log('Station posted successfully:', stationResponse.data);
+          stationId = stationResponse.data._id;
+        } else {
+          console.error('Failed to post station:', stationResponse.data);
+          return;
+        }
+      }
+  
+      if (!stationId) {
+        console.error('Station ID is undefined');
+        return;
+      }
+      console.log('Booking details:', {...bookingDetails, stationId});
+      const bookingResponse = await axios.post(`${BASE_URL}/api/bookings`, {
+        ...bookingDetails,
+        stationId, 
+      });
+  
+      if (bookingResponse.status === 201 && bookingResponse.data.booking) {
+        console.log('Booking posted successfully:', bookingResponse.data.booking);
+        return bookingResponse.data.booking;
+      } else {
+        console.error('Failed to post booking:', bookingResponse.data);
+      }
+    } catch (error) {
+      if(axios.isAxiosError(error)) {
+        console.error('Axios error:', error.response?.data || error.message);
+      } else {
+        console.error('Unexpected error:', error);
+      }
+      
+    }
+    finally {
+      setLoading(false);
+    }
+  };
+
+  
+  const handleBooking = async () => {
+    try{
+      setLoading(true);
+
+      const userId = await fetchUserId();
+      if (!userId) {
+        console.error("User ID not found");
+        return;
+      }
+
+    const bookingDetails = {
+      userId,
+      vehicleType: selectedOptions.vehicleType,
+      vehicleModel: selectedOptions.vehicleModel,
+      connectionType: selectedOptions.connectionType,
+      date: selectedOptions.date,
+      time: selectedOptions.time,
+      amount: selectedAmount,
+      estimatedKwh: calculateCharge(selectedAmount),
+    };
+  
+    const response = await postBooking(bookingDetails);
+    if (response) {
+      console.log('Booking completed successfully:', response);
+      navigation.navigate('BookingConfirm'); 
+    }
+  }catch (error) {
+    console.error('Error in handleBooking:', error);
   }
+  };
+
 
   return (
     <ImageBackground
       source={require('../../assets/img/bg.jpg')}
       style={styles.bgImgContainer}>
+        <ScrollView style={styles.scrollContainer} keyboardShouldPersistTaps="handled">
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -198,8 +363,34 @@ const BookingScreen = () => {
           />
         )}
 
+        {/* Slider Section */}
+
+        <View style={styles.sliderContainer}>
+          <Text style={styles.sliderLabel}>Select Amount (₹)</Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={2000}
+            step={100}
+            value={selectedAmount}
+            onSlidingComplete={(value: number) => {
+              setSelectedAmount(value);
+              setIsFullCharge(false); 
+            }}
+            minimumTrackTintColor="#0a7d00"
+            maximumTrackTintColor="#ddd"
+            thumbTintColor="#0a7d00"
+          />
+          <Text style={styles.amountText}>
+            Selected Amount: ₹{selectedAmount}
+          </Text>
+          <Text style={styles.chargeText}>
+            You will get approximately {calculateCharge(selectedAmount)} kWh
+          </Text>
+        </View>
+
         {/* Continue Button */}
-        <TouchableOpacity onPress={() => handleNext(selectedOptions) } style={styles.button}>
+        <TouchableOpacity onPress={() => handleBooking()} style={styles.button}>
           <Text style={styles.buttonText}>Continue</Text>
         </TouchableOpacity>
 
@@ -213,7 +404,6 @@ const BookingScreen = () => {
                 keyExtractor={(
                   item:
                     | {
-                        image: ImageSourcePropType | undefined;
                         name: string;
                       }
                     | string,
@@ -227,9 +417,6 @@ const BookingScreen = () => {
                         typeof item === 'string' ? item : item.name,
                       )
                     }>
-                    {typeof item !== 'string' && (
-                      <Image source={item.image} style={styles.vehicleImage} />
-                    )}
                     <Text style={styles.modalItemText}>
                       {typeof item === 'string' ? item : item.name}
                     </Text>
@@ -245,6 +432,7 @@ const BookingScreen = () => {
           </View>
         </Modal>
       </View>
+      </ScrollView>
     </ImageBackground>
   );
 };
@@ -258,14 +446,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  scrollContainer: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
-    
     paddingHorizontal: 20,
     paddingTop: 32,
   },
   header: {
-    
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
@@ -295,6 +484,54 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 14,
     color: '#888',
+  },
+  sliderContainer: {
+    backgroundColor: '#f7f7f7',
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  sliderLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  amountText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+    color: '#333',
+  },
+  chargeText: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 5,
+  },
+  fullChargeContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  fullChargeButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#0a7d00',
+  },
+  fullChargeButtonActive: {
+    backgroundColor: '#0a7d00',
+  },
+  fullChargeText: {
+    fontSize: 16,
+    color: '#0a7d00',
+    fontWeight: 'bold',
+  },
+  fullChargeTextActive: {
+    color: '#fff',
   },
   button: {
     backgroundColor: '#0a7d00',

@@ -60,7 +60,7 @@ const RoutingTest = () => {
     const radiusMeters = 1000; // 2 km radius
     let stations: any[] = [];
 
-    // Divide the route into 5 parts
+    // Divide the route into 10 parts
     const parts = divideRouteIntoParts(coords, 10);
 
     await Promise.all(
@@ -150,6 +150,13 @@ const RoutingTest = () => {
       return;
     }
 
+    console.log('Navigating to MapViewScreen with:', {
+      routeCoords,
+      start: startLocation,
+      dest: destLocation,
+      chargingStations,
+    });
+ 
     navigation.navigate('MapViewScreen', {
       routeCoords,
       start: startLocation,

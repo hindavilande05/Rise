@@ -16,6 +16,7 @@ import Icon1 from 'react-native-vector-icons/FontAwesome5';
 import MapView, {Marker} from 'react-native-maps';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../types';
+import PlanJourneyCard from '../Components/PlanJourneyCard';
 
 const GO_MAPS_API_KEY = 'AlzaSyctPPvnwKRxmRIvqYVD_UuQMm7VUfLkfhL';
 const routes = [
@@ -84,35 +85,13 @@ const HomeScreen = () => {
         <View style={styles.container}>
           <Text style={styles.header}>Routes</Text>
 
-          <View style={styles.searchBox}>
-            <Text style={styles.h2}>Plan a trip</Text>
-            <Text style={styles.searchLabel}>Where do you want to start?</Text>
-            <View style={styles.searchInputContainer}>
-              <Icon
-                name="map-marker"
-                size={20}
-                color="#000"
-                style={styles.searchPinIcon}
-              />
-              <TextInput
-                placeholder="Start from area or location"
-                placeholderTextColor={'black'}
-                style={styles.searchInput}
-              />
-              <Icon
-                name="search"
-                size={20}
-                color="#000"
-                style={styles.searchIcon}
-              />
-            </View>
-          </View>
-
-          <TouchableOpacity
+          <PlanJourneyCard navigation={navigation} />
+          
+          {/* <TouchableOpacity
             style={styles.button}
             onPress={() => navigation.navigate('RoutingTest')}>
             <Text style={styles.buttonText}>Plan a Journey</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* 
     <View style={styles.searchBox}>
@@ -321,7 +300,8 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   routeCard: {
-    backgroundColor: 'rgba(240, 235, 235, 0.87)',
+    //backgroundColor: 'rgba(240, 235, 235, 0.87)',
+    backgroundColor: '#fff',
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,

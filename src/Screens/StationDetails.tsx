@@ -1,6 +1,6 @@
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import {NavigationProp, useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
-import { RootStackParamList } from '../types';
+import {RootStackParamList} from '../types';
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
   Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import {useSelector} from 'react-redux';
+import {RootState} from '../Redux/store';
 
 // Amenity Component
 interface AmenityProps {
@@ -87,26 +89,45 @@ const checkins: Checkin[] = [
 
 const StationDetails: React.FC = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const station = useSelector(
+    (state: RootState) => state.chargingStation.selectedStation,
+  );
+
+  if (!station) {
+    return (
+      <View style={styles.container}>
+        <Text>No station selected.</Text>
+      </View>
+    );
+  }
+
+  const {poi, address, chargingPark} = station;
+  const connectors = chargingPark?.connectors || [];
 
   const handleGetDirections = (address: string) => {
-    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      address,
+    )}`;
     Linking.openURL(url);
   };
 
   const handleBooking = () => {
-    navigation.navigate("BookingScreen");
-  }
+    navigation.navigate('BookingScreen');
+  };
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{paddingBottom: 100}}>
+      <ScrollView
+        contentContainerStyle={{paddingBottom: 100}}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled>
         {/* Back Icon */}
-        <TouchableOpacity style={styles.backIcon} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.backIcon}
+          onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={15} color="#FFF" />
         </TouchableOpacity>
 
-
-        {/* Header Image */}
         <Image
           source={require('../../assets/img/ev-station2.jpeg')}
           style={styles.headerImage}
@@ -114,9 +135,15 @@ const StationDetails: React.FC = () => {
 
         {/* Charging Station Info */}
         <View style={styles.infoContainer}>
-          <Text style={styles.title}>Tata Power Charging Station</Text>
-          <Text style={styles.subtitle}>PB No. 10, Sai Nagar, badnera Road, Amravati</Text>
-          <Text style={styles.openHours}>Open: 06:00 AM to 11:00 PM</Text>
+          <Text style={styles.title}>
+            {station.poi?.name || 'EV Charging Station'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {station.address?.freeformAddress || 'Unknown address'}
+          </Text>
+          <Text style={styles.openHours}>
+            {station.openingHours?.text || 'Open 24 hours'}
+          </Text>
           <TouchableOpacity style={styles.favIcon}>
             <Icon name="heart" size={22} color="gray" />
           </TouchableOpacity>
@@ -134,7 +161,7 @@ const StationDetails: React.FC = () => {
         </View>
 
         {/* Connections Available */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <Text style={styles.sectionTitle}>Connections available</Text>
           <View style={styles.connectionsRow}>
             <Connection
@@ -156,8 +183,36 @@ const StationDetails: React.FC = () => {
               taken="6/6"
             />
           </View>
+        </View> */}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Connectors</Text>
+          <View style={styles.connectionsRow}>
+            {connectors.length === 0 ? (
+              <Text style={{fontStyle: 'italic'}}>
+                No connectors available.
+              </Text>
+            ) : (
+              connectors.map((connector, index) => (
+                <View key={index} style={styles.connectionItem}>
+                  <Icon name="plug" size={30} color="#4CAF50" />
+                  <Text style={styles.connectionText}>
+                    {connector.connectorType}
+                  </Text>
+                  <Text style={styles.connectionSubText}>
+                    {connector.ratedPowerKW} kW
+                  </Text>
+                  <Text style={styles.connectionSubText}>
+                    {connector.voltageV}V | {connector.currentA}A (
+                    {connector.currentType})
+                  </Text>
+                </View>
+              ))
+            )}
+          </View>
         </View>
 
+        {/* Reviews Section */}
         {/* Check-ins Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Check-ins</Text>
@@ -186,14 +241,28 @@ const StationDetails: React.FC = () => {
       </ScrollView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={handleBooking} style={[styles.button, styles.bookButton]}>
-        <Icon name="calendar-alt" size={16} color="#FFF" style={styles.buttonIcon} />
+        <TouchableOpacity
+          onPress={handleBooking}
+          style={[styles.button, styles.bookButton]}>
+          <Icon
+            name="calendar-alt"
+            size={16}
+            color="#FFF"
+            style={styles.buttonIcon}
+          />
           <Text style={styles.buttonText}>Book Slot</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => handleGetDirections('PB No. 10, Sai Nagar, badnera Road, Amravati')}
-         style={[styles.button, styles.directionButton]}>
-          
-        <Icon name="directions" size={16} color="#FFF" style={styles.buttonIcon} />
+        <TouchableOpacity
+          onPress={() =>
+            handleGetDirections('PB No. 10, Sai Nagar, badnera Road, Amravati')
+          }
+          style={[styles.button, styles.directionButton]}>
+          <Icon
+            name="directions"
+            size={16}
+            color="#FFF"
+            style={styles.buttonIcon}
+          />
           <Text style={styles.buttonText}>Get Directions</Text>
         </TouchableOpacity>
       </View>
@@ -208,16 +277,6 @@ const Amenity: React.FC<AmenityProps> = ({icon, label}) => (
   </View>
 );
 
-const Connection: React.FC<ConnectionProps> = ({type, power, price, taken}) => (
-  <View style={styles.connectionItem}>
-    <Icon name="plug" size={30} color="#4CAF50" />
-    <Text style={styles.connectionText}>{type}</Text>
-    <Text style={styles.connectionSubText}>{power}</Text>
-    <Text style={styles.connectionSubText}>{price}</Text>
-    <Text style={styles.connectionTaken}>{taken} Taken</Text>
-  </View>
-);
-
 // Styles
 const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: '#F8F8F8'},
@@ -229,7 +288,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 5,
     backgroundColor: '#808080',
-    borderRadius: 25
+    borderRadius: 25,
   },
   headerImage: {
     width: '100%',
@@ -282,9 +341,13 @@ const styles = StyleSheet.create({
     color: '#555',
     marginTop: 5,
   },
+
   connectionsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 10,
   },
   connectionItem: {
     backgroundColor: '#E8F5E9',
@@ -292,20 +355,29 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     width: '30%',
+    marginBottom: 10,
   },
   connectionText: {
     fontSize: 14,
     fontWeight: 'bold',
     marginTop: 5,
+    textAlign: 'center',
   },
   connectionSubText: {
     fontSize: 12,
     color: '#777',
+    textAlign: 'center',
   },
-  connectionTaken: {
-    fontSize: 12,
-    color: '#FF5733',
-    marginTop: 5,
+
+  connectorText: {
+    fontSize: 14,
+    color: '#444',
+    marginBottom: 4,
+  },
+  checkinText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -321,7 +393,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     flexDirection: 'row',
     justifyContent: 'center',
-    
   },
   bookButton: {
     backgroundColor: '#FFA500',
@@ -329,7 +400,7 @@ const styles = StyleSheet.create({
   directionButton: {
     backgroundColor: '#007BFF',
   },
-  
+
   buttonIcon: {
     marginRight: 8,
   },

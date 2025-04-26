@@ -1,14 +1,15 @@
 export type RootStackParamList = {
     BookingScreen: undefined;
-    BookingConfirm: {
-      car: string;
-      date: string;
-      slotTime: string;
-      connectionType: string;
-      battery: string;
-      price: string;
-      amount: string;
-    };
+    // BookingConfirm: {
+    //   car: string;
+    //   date: string;
+    //   slotTime: string;
+    //   connectionType: string;
+    //   battery: string;
+    //   price: string;
+    //   amount: string;
+    // };
+    BookingConfirm: undefined;
     BookingReceipt: undefined;
     HomeScreen: undefined;
     ProfileScreen: undefined;
@@ -34,12 +35,7 @@ export type RootStackParamList = {
       dest: { lat: number; lon: number };
       chargingStations: ChargingStation[];  // Updated to include charging stations
     };
-    
-    
-   
-    
   };
-
   export type ChargingStation = {
     position: {
       lat: number;
@@ -47,8 +43,21 @@ export type RootStackParamList = {
     };
     poi?: {
       name: string;
+      openingHours?: {
+        text: string; 
+      };
     };
     address?: {
       freeformAddress: string;
     };
+    chargingPark?: {
+      connectors: {
+        connectorType: string;
+        ratedPowerKW: number;
+        voltageV: number;
+        currentA: number;
+        currentType: string;
+      }[];
+    };
   };
+  
