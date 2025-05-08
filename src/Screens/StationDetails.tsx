@@ -117,10 +117,7 @@ const StationDetails: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{paddingBottom: 100}}
-        keyboardShouldPersistTaps="handled"
-        nestedScrollEnabled>
+      <ScrollView style={{paddingBottom: 100}}>
         {/* Back Icon */}
         <TouchableOpacity
           style={styles.backIcon}
@@ -160,31 +157,6 @@ const StationDetails: React.FC = () => {
           </View>
         </View>
 
-        {/* Connections Available */}
-        {/* <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Connections available</Text>
-          <View style={styles.connectionsRow}>
-            <Connection
-              type="CCS"
-              power="55 kW"
-              price=" Rs 0.05/kW"
-              taken="0/3"
-            />
-            <Connection
-              type="CCS2"
-              power="55 kW"
-              price="Rs 0.05/kW"
-              taken="2/5"
-            />
-            <Connection
-              type="Mennekes"
-              power="34 kW"
-              price="Rs 0.02/kW"
-              taken="6/6"
-            />
-          </View>
-        </View> */}
-
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Connectors</Text>
           <View style={styles.connectionsRow}>
@@ -217,6 +189,7 @@ const StationDetails: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Check-ins</Text>
           <FlatList
+            scrollEnabled={false}
             data={checkins}
             keyExtractor={item => item.id}
             renderItem={({item}) => (
@@ -238,7 +211,7 @@ const StationDetails: React.FC = () => {
             )}
           />
         </View>
-      </ScrollView>
+        </ScrollView>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity

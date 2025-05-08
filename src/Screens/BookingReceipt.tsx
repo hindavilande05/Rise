@@ -14,19 +14,17 @@ import { RootStackParamList } from '../types';
 const BookingReceipt = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
       
-      const handleNext = () => {
-        navigation.navigate("HomeScreen");
-      };
+    const handleNext = () => {
+      navigation.navigate('Dashboard', {
+        screen: 'Profile',
+      });
+    };
+    
   return (
     <ImageBackground
       source={require('../../assets/img/bg.jpg')}
       style={styles.bgImgContainer}>
-      <BlurView
-        style={styles.absolute}
-        blurType="light"
-        blurAmount={1}
-        reducedTransparencyFallbackColor="white"
-      />
+     
 
       <View style={styles.container}>
         <Text style={styles.title}>Thank you for your booking</Text>
@@ -92,7 +90,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingTop: 30,
-    zIndex: 1,
+   
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
 
@@ -107,7 +105,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: 'green',
+    color: '#059768',
     fontWeight: 'bold',
     marginBottom: 20,
   },
@@ -137,7 +135,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 20,
-    backgroundColor: 'green',
+    backgroundColor: '#059768',
     paddingVertical: 12,
     paddingHorizontal: 40,
     borderRadius: 25,

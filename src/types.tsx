@@ -1,15 +1,9 @@
 export type RootStackParamList = {
     BookingScreen: undefined;
-    // BookingConfirm: {
-    //   car: string;
-    //   date: string;
-    //   slotTime: string;
-    //   connectionType: string;
-    //   battery: string;
-    //   price: string;
-    //   amount: string;
-    // };
-    BookingConfirm: undefined;
+  
+    BookingConfirm: {
+      bookingDetails: BookingDetails;
+    }
     BookingReceipt: undefined;
     HomeScreen: undefined;
     ProfileScreen: undefined;
@@ -26,7 +20,10 @@ export type RootStackParamList = {
     SearchPlace: undefined;
     Login: undefined;
     Register: undefined;
-    Dashboard: undefined;
+    Dashboard: {
+      screen?: 'Home' | 'ChargeSpots' | 'Recommend EV' | 'Profile';
+      params?: object;
+    };
     LongDistEVRoutes: undefined;
     RoutingTest: undefined;
     MapViewScreen: {
@@ -34,6 +31,16 @@ export type RootStackParamList = {
       start: { lat: number; lon: number };
       dest: { lat: number; lon: number };
       chargingStations: ChargingStation[];  // Updated to include charging stations
+    };
+
+    MyBookings: undefined;
+    BookingDetails: { bookingId: string };
+    EVRecommendationScreen: undefined;
+    EVRecommendationScreen2: {
+      selectedBudget: string | null;
+      selectedRange: string | null;
+      selectedChargeTime: string | null;
+      recommendations: EVRecommendation[];
     };
   };
   export type ChargingStation = {
@@ -60,4 +67,25 @@ export type RootStackParamList = {
       }[];
     };
   };
+
   
+export type BookingDetails = {
+  userId: string;
+  vehicleType: string;
+  vehicleModel: string;
+  connectionType: string;
+  date: string;
+  time: string;
+  amount: number;
+  estimatedKwh: string;
+};
+  
+
+export interface EVRecommendation {
+  Model: string;
+  Brand: string;
+  PriceINR: number;
+  Range_Km: number;
+  ChargingTime: number;
+  Distance: number;
+}

@@ -67,8 +67,7 @@ const MapViewScreen = () => {
         <Marker
           coordinate={{latitude: start.lat, longitude: start.lon}}
           title="Start"
-          pinColor="green"
-        />
+          pinColor="green"/>
 
         {/* Destination Marker */}
         <Marker

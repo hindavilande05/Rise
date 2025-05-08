@@ -1,19 +1,120 @@
-import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet, ImageBackground } from "react-native";
+import React, { useState } from "react";
+import { View, Text, Image, TouchableOpacity, StyleSheet, ImageBackground, ActivityIndicator } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Icon1 from "react-native-vector-icons/FontAwesome6";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { RootStackParamList } from "../types"; // Adjust the path as necessary
+import { useNavigation, NavigationProp, useRoute, RouteProp } from "@react-navigation/native";
+import { RootStackParamList } from "../types"; 
+import axios from "axios";
+import { BASE_URL } from "../../config";
+import { useSelector } from "react-redux";
+import { RootState } from "../Redux/store";
+
+type BookingConfirmRouteProp = RouteProp<RootStackParamList, "BookingConfirm">;
+
 
 const BookingConfirm = () => {
+  const route = useRoute<BookingConfirmRouteProp>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { bookingDetails } = route.params;
+  const [loading, setLoading] = useState(false);
+  // Get station data from Redux
+  const stationData = useSelector((state: RootState) => state.chargingStation.selectedStation);
   
-  const handlePayment = () => {
-    navigation.navigate("BookingReceipt");
+
+  console.log("Booking Details:", bookingDetails);
+
+  const postBooking = async () => {
+      setLoading(true);
+      try {
+       
+        if (!stationData) {
+          console.error('No station data available in Redux');
+          return;
+        }
+        let stationId: string | undefined;
+        const existingStationResponse = await axios.get(`${BASE_URL}/api/stations`, {
+          params: {
+            name: stationData.poi?.name,
+            latitude: stationData.position.lat,
+            longitude: stationData.position.lon,
+          },
+        });
+    
+        if (existingStationResponse.data && existingStationResponse.data.station) {
+          // Station already exists
+          console.log('Station already exists:',  existingStationResponse.data.stations[0]);
+          stationId = existingStationResponse.data.stations[0]._id;
+        } else {
+         
+          const stationResponse = await axios.post(`${BASE_URL}/api/stations`, {
+            name: stationData.poi?.name,
+            location: {
+              latitude: stationData.position.lat,
+              longitude: stationData.position.lon,
+            },
+            address: stationData.address?.freeformAddress,
+            connectorTypes: stationData.chargingPark?.connectors.map((connector) => connector.connectorType),
+            ratedPowerKW: stationData.chargingPark?.connectors.reduce((max, connector) => Math.max(max, connector.ratedPowerKW), 0),
+            pricePerKwh: 12.5,
+          });
+    
+          if (stationResponse.data) {
+            console.log('Station posted successfully:', stationResponse.data);
+            stationId = stationResponse.data._id;
+          } else {
+            console.error('Failed to post station:', stationResponse.data);
+            return;
+          }
+        }
+    
+        if (!stationId) {
+          console.error('Station ID is undefined');
+          return;
+        }
+       
+        const bookingResponse = await axios.post(`${BASE_URL}/api/bookings`, {
+          ...bookingDetails,
+          stationId, 
+        });
+    
+        if (bookingResponse.status === 201 && bookingResponse.data.booking) {
+          console.log('Booking posted successfully:', bookingResponse.data.booking);
+          return bookingResponse.data.booking;
+        } else {
+          console.error('Failed to post booking:', bookingResponse.data);
+        }
+      } catch (error) {
+        if(axios.isAxiosError(error)) {
+          console.error('Axios error:', error.response?.data || error.message);
+        } else {
+          console.error('Unexpected error:', error);
+        }
+      }
+      finally {
+        setLoading(false);
+      }
+    };
+
+  const handlePayment = async () => {
+    const response = await postBooking();
+    if (response) {
+      console.log('Booking completed successfully:', response);
+      console.log('Navigating to Booking Receipt...');
+      navigation.navigate('BookingReceipt');
+    }
+
   };
 
-  
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#00875A" />
+        <Text style={styles.loaderText}>Booking is processing...</Text>
+      </View>
+    );
+  }
+
   return (
     <ImageBackground
           source={require('../../assets/img/bg.jpg')}
@@ -35,8 +136,8 @@ const BookingConfirm = () => {
             style={styles.stationImage}
           />
           <View style={styles.info}>
-            <Text style={styles.stationTitle}>Tata Power Charging Station</Text>
-            <Text style={styles.stationSubtitle}>PB No. 10, Sai Nagar, badnera Road, Amravati</Text>
+            <Text style={styles.stationTitle}>{stationData?.poi?.name || "Station Name Not Available"}</Text>
+            <Text style={styles.stationSubtitle}>{stationData?.address?.freeformAddress || "NA"}</Text>
             <View style={styles.ratingRow}>
               <Icon name="star" size={16} color="gold" />
               <Text style={styles.ratingText}>4.7</Text>
@@ -60,8 +161,8 @@ const BookingConfirm = () => {
         <View style={styles.carInfo}>
           
           <View>
-            <Text style={styles.carTitle}>BMW i7</Text>
-            <Text style={styles.carType}>4 Wheeler</Text>
+            <Text style={styles.carTitle}>{bookingDetails.vehicleModel}</Text>
+            <Text style={styles.carType}>{bookingDetails.vehicleType}</Text>
           </View>
           <Image
             source={require("../../assets/img/car1.jpg")} 
@@ -73,19 +174,19 @@ const BookingConfirm = () => {
         <View style={styles.details}>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Date</Text>
-              <Text style={styles.detailValue}>25 Sept 2023</Text>
+              <Text style={styles.detailValue}>{bookingDetails.date}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Slot time</Text>
-              <Text style={styles.detailValue}>11:50 PM</Text>
+              <Text style={styles.detailValue}>{bookingDetails.time}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Connection Type</Text>
-              <Text style={styles.detailValue}>CCS2</Text>
+              <Text style={styles.detailValue}>{bookingDetails.connectionType}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Battery</Text>
-              <Text style={styles.detailValue}>120 kW</Text>
+              <Text style={styles.detailValue}>{bookingDetails.estimatedKwh}</Text>
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Price</Text>
@@ -93,16 +194,16 @@ const BookingConfirm = () => {
             </View>
           </View>
 
-        <Text style={styles.chargeText}>
+        {/* <Text style={styles.chargeText}>
           You selected full charge for this booking.
-        </Text>
+        </Text> */}
 
-        <Text style={styles.amountText}>Payable amount <Text style={styles.amountHighlight}> Rs. 150</Text></Text>
+        <Text style={styles.amountText}>Payable amount <Text style={styles.amountHighlight}>{bookingDetails.amount}</Text></Text>
       </View>
 
       {/* Confirm & Pay Button */}
       <TouchableOpacity onPress={() => handlePayment()} style={styles.confirmButton}>
-        <Text style={styles.confirmText}>Confirm & Pay</Text>
+        <Text style={styles.confirmText}>Confirm & Reserve</Text>
       </TouchableOpacity>
     </View>
     </ImageBackground>
@@ -118,6 +219,18 @@ const DetailRow = ({ icon, label, value }: { icon: string; label: string; value:
 );
 
 const styles = StyleSheet.create({
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Optional: Add a semi-transparent background
+  },
+  loaderText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#00875A",
+    fontWeight: "bold",
+  },
   bgImgContainer: {
     flex: 1,
     resizeMode: 'cover',
@@ -126,7 +239,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    
     padding: 16,
   },
   header: {
@@ -204,7 +316,7 @@ const styles = StyleSheet.create({
     color: "#777",
   },
   directionButton: {
-    backgroundColor: "#00875A",
+    backgroundColor: "#059768",
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -259,7 +371,7 @@ const styles = StyleSheet.create({
   chargeText: {
     marginTop: 15,
     fontSize: 18,
-    color: "#00875A",
+    color: "#059768",
     fontWeight: "600",
     textAlign: "center",
   },
@@ -269,11 +381,11 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   amountHighlight: {
-    color: "#00875A",
+    color: "#059768",
     fontWeight: "bold",
   },
   confirmButton: {
-    backgroundColor: "#00875A",
+    backgroundColor: "#059768",
     padding: 12,
     borderRadius: 8,
     alignItems: "center",

@@ -5,6 +5,7 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const bookingsRoute = require('./routes/bookings');
 const stationRoutes = require('./routes/stations');
+const  recommend = require('./routes/recommend');
 
 require("dotenv").config();
 
@@ -15,11 +16,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: '*' }));
 
+//Cron job to update booking status
+require("./cron/bookingStatusCron");
+
+//recommendation route
+app.use('/api', recommend);
+
 // Routes
 app.use("/api/auth", authRoutes); 
 app.use("/api/users", userRoutes);
 app.use("/api/stations", stationRoutes); 
 app.use('/api/bookings', bookingsRoute);
+
+
 
 
 // Start Server

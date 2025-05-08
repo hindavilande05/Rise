@@ -25,6 +25,7 @@ exports.register = async (req, res) => {
     }
 };
 
+
 // Login User
 exports.login = async (req, res) => {
     try {
@@ -37,13 +38,11 @@ exports.login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
-        // Generate Token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        // Generate Token (corrected field)
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
         res.json({ token, user });
     } catch (error) {
         res.status(500).json({ msg: "Server Error", error });
     }
 };
-
-

@@ -59,8 +59,10 @@ const vehicleModels = [
 const BookingScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    
   // Get station data from Redux
   const stationData = useSelector((state: RootState) => state.chargingStation.selectedStation);
+  
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({
     vehicleType: '',
     vehicleModel: '',
@@ -140,7 +142,7 @@ const BookingScreen = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      return response.data?._id || null; // Assuming `_id` is the userId in the response
+      return response.data?._id || null; 
     } catch (error) {
       console.error("Error fetching user ID:", error);
       Alert.alert("Error", "Failed to fetch user ID.");
@@ -149,80 +151,79 @@ const BookingScreen = () => {
   };
 
 
-  const postBooking = async (bookingDetails: BookingDetails): Promise<any> => {
-    setLoading(true);
-    try {
+  // const postBooking = async (bookingDetails: BookingDetails): Promise<any> => {
+  //   setLoading(true);
+  //   try {
      
-      if (!stationData) {
-        console.error('No station data available in Redux');
-        return;
-      }
-      let stationId: string | undefined;
-      const existingStationResponse = await axios.get(`${BASE_URL}/api/stations`, {
-        params: {
-          name: stationData.poi?.name,
-          latitude: stationData.position.lat,
-          longitude: stationData.position.lon,
-        },
-      });
+  //     if (!stationData) {
+  //       console.error('No station data available in Redux');
+  //       return;
+  //     }
+  //     let stationId: string | undefined;
+  //     const existingStationResponse = await axios.get(`${BASE_URL}/api/stations`, {
+  //       params: {
+  //         name: stationData.poi?.name,
+  //         latitude: stationData.position.lat,
+  //         longitude: stationData.position.lon,
+  //       },
+  //     });
   
       
   
-      if (existingStationResponse.data && existingStationResponse.data.station) {
-        // Station already exists
-        console.log('Station already exists:',  existingStationResponse.data.stations[0]);
-        stationId = existingStationResponse.data.stations[0]._id;
-      } else {
+  //     if (existingStationResponse.data && existingStationResponse.data.station) {
+  //       // Station already exists
+  //       console.log('Station already exists:',  existingStationResponse.data.stations[0]);
+  //       stationId = existingStationResponse.data.stations[0]._id;
+  //     } else {
        
-        const stationResponse = await axios.post(`${BASE_URL}/api/stations`, {
-          name: stationData.poi?.name,
-          location: {
-            latitude: stationData.position.lat,
-            longitude: stationData.position.lon,
-          },
-          address: stationData.address?.freeformAddress,
-          connectorTypes: stationData.chargingPark?.connectors.map((connector) => connector.connectorType),
-          ratedPowerKW: stationData.chargingPark?.connectors.reduce((max, connector) => Math.max(max, connector.ratedPowerKW), 0),
-          pricePerKwh: 12.5,
-        });
+  //       const stationResponse = await axios.post(`${BASE_URL}/api/stations`, {
+  //         name: stationData.poi?.name,
+  //         location: {
+  //           latitude: stationData.position.lat,
+  //           longitude: stationData.position.lon,
+  //         },
+  //         address: stationData.address?.freeformAddress,
+  //         connectorTypes: stationData.chargingPark?.connectors.map((connector) => connector.connectorType),
+  //         ratedPowerKW: stationData.chargingPark?.connectors.reduce((max, connector) => Math.max(max, connector.ratedPowerKW), 0),
+  //         pricePerKwh: 12.5,
+  //       });
   
-        if (stationResponse.data) {
-          console.log('Station posted successfully:', stationResponse.data);
-          stationId = stationResponse.data._id;
-        } else {
-          console.error('Failed to post station:', stationResponse.data);
-          return;
-        }
-      }
+  //       if (stationResponse.data) {
+  //         console.log('Station posted successfully:', stationResponse.data);
+  //         stationId = stationResponse.data._id;
+  //       } else {
+  //         console.error('Failed to post station:', stationResponse.data);
+  //         return;
+  //       }
+  //     }
   
-      if (!stationId) {
-        console.error('Station ID is undefined');
-        return;
-      }
-      console.log('Booking details:', {...bookingDetails, stationId});
-      const bookingResponse = await axios.post(`${BASE_URL}/api/bookings`, {
-        ...bookingDetails,
-        stationId, 
-      });
+  //     if (!stationId) {
+  //       console.error('Station ID is undefined');
+  //       return;
+  //     }
+     
+  //     const bookingResponse = await axios.post(`${BASE_URL}/api/bookings`, {
+  //       ...bookingDetails,
+  //       stationId, 
+  //     });
   
-      if (bookingResponse.status === 201 && bookingResponse.data.booking) {
-        console.log('Booking posted successfully:', bookingResponse.data.booking);
-        return bookingResponse.data.booking;
-      } else {
-        console.error('Failed to post booking:', bookingResponse.data);
-      }
-    } catch (error) {
-      if(axios.isAxiosError(error)) {
-        console.error('Axios error:', error.response?.data || error.message);
-      } else {
-        console.error('Unexpected error:', error);
-      }
-      
-    }
-    finally {
-      setLoading(false);
-    }
-  };
+  //     if (bookingResponse.status === 201 && bookingResponse.data.booking) {
+  //       console.log('Booking posted successfully:', bookingResponse.data.booking);
+  //       return bookingResponse.data.booking;
+  //     } else {
+  //       console.error('Failed to post booking:', bookingResponse.data);
+  //     }
+  //   } catch (error) {
+  //     if(axios.isAxiosError(error)) {
+  //       console.error('Axios error:', error.response?.data || error.message);
+  //     } else {
+  //       console.error('Unexpected error:', error);
+  //     }
+  //   }
+  //   finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   
   const handleBooking = async () => {
@@ -245,17 +246,22 @@ const BookingScreen = () => {
       amount: selectedAmount,
       estimatedKwh: calculateCharge(selectedAmount),
     };
+
+    navigation.navigate('BookingConfirm', { bookingDetails });
   
-    const response = await postBooking(bookingDetails);
-    if (response) {
-      console.log('Booking completed successfully:', response);
-      navigation.navigate('BookingConfirm'); 
-    }
+    //const response = await postBooking(bookingDetails);
+    // if (response) {
+    //   console.log('Booking completed successfully:', response);
+    //   navigation.navigate('BookingConfirm'); 
+    // }
+
   }catch (error) {
     console.error('Error in handleBooking:', error);
+    Alert.alert("Error", "Failed to complete booking.");
+  } finally{
+    setLoading(false);
   }
   };
-
 
   return (
     <ImageBackground
@@ -511,30 +517,9 @@ const styles = StyleSheet.create({
     color: '#555',
     marginTop: 5,
   },
-  fullChargeContainer: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  fullChargeButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#0a7d00',
-  },
-  fullChargeButtonActive: {
-    backgroundColor: '#0a7d00',
-  },
-  fullChargeText: {
-    fontSize: 16,
-    color: '#0a7d00',
-    fontWeight: 'bold',
-  },
-  fullChargeTextActive: {
-    color: '#fff',
-  },
+
   button: {
-    backgroundColor: '#0a7d00',
+    backgroundColor: '#059768',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',

@@ -2,13 +2,18 @@ const express = require('express');
 const router = express.Router();
 const bookingController = require('../controllers/bookingController');
 
+const authMiddleware = require('../middleware/authMiddleware');
+
 
 router.post('/', bookingController.createBooking);
 
-//all bookings for a user
-router.get('/:userId', bookingController.getUserBookings);
+// //all bookings for a user
+// router.get('/:userId', bookingController.getUserBookings);
 
-// Get a booking by ID - not working yet
-router.get('/:id', bookingController.getBookingById); 
+router.get('/', authMiddleware, bookingController.getUserBookings);
+
+router.get('/getBookingById/:bookingId', bookingController.getBookingById);
+
+router.put('/cancelBooking/:bookingId', bookingController.cancelBooking);
 
 module.exports = router;

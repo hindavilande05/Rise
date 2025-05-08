@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   Button,
+  Linking,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -68,64 +69,30 @@ const HomeScreen = () => {
     navigation.navigate('StationDetails');
   };
 
-  const handleGetDirections = (route: any) => {
-    navigation.navigate('DirectionsScreen', {
-      startLocation: route.startLocation,
-      endLocation: route.endLocation,
-    });
-  };
+  // const handleGetDirections = (route: any) => {
+  //   navigation.navigate('DirectionsScreen', {
+  //     startLocation: route.startLocation,
+  //     endLocation: route.endLocation,
+  //   });
+  // };
+
+  const handleGetDirections = (address: string) => {
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        address,
+      )}`;
+      Linking.openURL(url);
+    };
 
   return (
-    <ImageBackground
-      source={require('../../assets/img/bg.jpg')}
-      style={styles.bgImgContainer}>
+ 
+    <View style={styles.bgImgContainer}>
+    
       <ScrollView
         style={styles.scrollContainer}
         keyboardShouldPersistTaps="handled">
         <View style={styles.container}>
           <Text style={styles.header}>Routes</Text>
-
           <PlanJourneyCard navigation={navigation} />
-          
-          {/* <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate('RoutingTest')}>
-            <Text style={styles.buttonText}>Plan a Journey</Text>
-          </TouchableOpacity> */}
-
-          {/* 
-    <View style={styles.searchBox}>
-      <Text style={styles.h2}>Plan a trip</Text>
-      <Text style={styles.searchLabel}>Where do you want to start?</Text>
-      <View style={styles.searchInputContainer}>
-        <Icon name="map-marker" size={20} color="#000" style={styles.searchPinIcon} />
-
-        <GooglePlacesAutocomplete
-          placeholder={placeholder}
-          query={{
-            key: GOOGLE_API_KEY,
-            language: 'en',
-          }}
-          fetchDetails={true}
-          onPress={(data, details = null) => {
-            onLocationSelect({
-              name: data.description,
-              lat: details?.geometry.location.lat ?? 0,
-              lng: details?.geometry.location.lng ?? 0,
-            });
-          }}
-          styles={{
-            textInput: styles.searchInput,
-            listView: styles.listView,
-            row: styles.listItem,
-          }}
-          debounce={300}
-        />
-
-        <Icon name="search" size={20} color="#000" style={styles.searchIcon} />
-      </View>
-    </View> */}
-
           <Text style={styles.subHeader}>My Routes</Text>
           <FlatList
             data={routes}
@@ -207,7 +174,7 @@ const HomeScreen = () => {
 
                   <TouchableOpacity
                     style={[styles.button, styles.directionButton]}
-                    onPress={() => handleGetDirections(item)}>
+                    onPress={() => handleGetDirections(`${item.endLocation.latitude},${item.endLocation.longitude}`)}>
                     <Icon1 name="directions" size={16} color="#FFF" />
                     <Text style={styles.buttonText}>Get Directions</Text>
                   </TouchableOpacity>
@@ -217,16 +184,16 @@ const HomeScreen = () => {
           />
         </View>
       </ScrollView>
-    </ImageBackground>
+      </View>
+
   );
 };
 
 const styles = StyleSheet.create({
-  bgImgContainer: {
-    flex: 1,
-    resizeMode: 'cover',
-    width: '100%',
-    height: '100%',
+
+  bgImgContainer:{
+    backgroundColor: '#e2fdf0'
+
   },
   
   scrollContainer: {
@@ -240,7 +207,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#fff',
+    
   },
   searchBox: {
     backgroundColor: 'rgba(240, 235, 235, 0.87)',
@@ -297,14 +264,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#fff',
+    marginTop: 10,
+    
   },
   routeCard: {
-    //backgroundColor: 'rgba(240, 235, 235, 0.87)',
     backgroundColor: '#fff',
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
+    elevation: 3,
+    shadowColor: '#FFF',
+    shadowOpacity: 0.2,
+    shadowOffset: {width: 0, height: 2},
+    shadowRadius: 5,
+    borderWidth: 1,
+    borderColor: '#deeee7',
   },
 
   route1: {
@@ -354,7 +328,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   directionButton: {
-    backgroundColor: 'green',
+    backgroundColor: '#059768',
     marginLeft: 2,
     flexDirection: 'row',
     justifyContent: 'center',

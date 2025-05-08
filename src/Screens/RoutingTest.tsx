@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -11,20 +11,25 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
-import { TOMTOM_API_KEY } from '../../config';
+import {useNavigation} from '@react-navigation/native';
+import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {RootStackParamList} from '../types';
+import {TOMTOM_API_KEY} from '../../config';
+import Icon1 from 'react-native-vector-icons/MaterialIcons';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const RoutingTest = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [startQuery, setStartQuery] = useState('');
   const [destQuery, setDestQuery] = useState('');
   const [startLocation, setStartLocation] = useState<any>(null);
   const [destLocation, setDestLocation] = useState<any>(null);
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [type, setType] = useState<'start' | 'dest' | null>(null);
-  const [info, setInfo] = useState<{ distance: string; time: string } | null>(null);
+  const [info, setInfo] = useState<{distance: string; time: string} | null>(
+    null,
+  );
   const [routeCoords, setRouteCoords] = useState<any[]>([]);
   const [chargingStations, setChargingStations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false); // loading state
@@ -38,7 +43,7 @@ const RoutingTest = () => {
   };
 
   const selectLocation = (location: any) => {
-    const { position, address } = location;
+    const {position, address} = location;
     if (type === 'start') {
       setStartLocation(position);
       setStartQuery(address.freeformAddress);
@@ -64,7 +69,7 @@ const RoutingTest = () => {
     const parts = divideRouteIntoParts(coords, 10);
 
     await Promise.all(
-      parts.map(async (part) => {
+      parts.map(async part => {
         const midpoint = part[Math.floor(part.length / 2)]; // Midpoint of the current part
         const url = `https://api.tomtom.com/search/2/poiSearch/charging%20station.json?lat=${midpoint.latitude}&lon=${midpoint.longitude}&radius=${radiusMeters}&key=${TOMTOM_API_KEY}`;
         try {
@@ -75,7 +80,7 @@ const RoutingTest = () => {
             console.error('Station fetch failed at:', midpoint, err.message);
           }
         }
-      })
+      }),
     );
 
     // Remove duplicates by position
@@ -83,13 +88,13 @@ const RoutingTest = () => {
       (station, index, self) =>
         index ===
         self.findIndex(
-          (s) =>
+          s =>
             s.position.lat === station.position.lat &&
-            s.position.lon === station.position.lon
-        )
+            s.position.lon === station.position.lon,
+        ),
     );
 
-    return uniqueStations.slice(0, 10); 
+    return uniqueStations.slice(0, 10);
   };
 
   // Helper function to divide the route into 5 parts
@@ -124,7 +129,7 @@ const RoutingTest = () => {
       const travelTimeMin = Math.round(summary.travelTimeInSeconds / 60);
       const formattedTime = formatTime(travelTimeMin);
 
-      setInfo({ distance: `${distanceKm} km`, time: formattedTime });
+      setInfo({distance: `${distanceKm} km`, time: formattedTime});
 
       const points = res.data.routes[0].legs[0].points;
       const coords = points.map((pt: any) => ({
@@ -145,7 +150,12 @@ const RoutingTest = () => {
   };
 
   const handleViewMap = () => {
-    if (!routeCoords.length || !startLocation || !destLocation || !chargingStations.length) {
+    if (
+      !routeCoords.length ||
+      !startLocation ||
+      !destLocation ||
+      !chargingStations.length
+    ) {
       Alert.alert('Please click "Get Info" first and wait for data to load.');
       return;
     }
@@ -156,7 +166,7 @@ const RoutingTest = () => {
       dest: destLocation,
       chargingStations,
     });
- 
+
     navigation.navigate('MapViewScreen', {
       routeCoords,
       start: startLocation,
@@ -167,40 +177,75 @@ const RoutingTest = () => {
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        value={startQuery}
-        placeholder="Start Location"
-        onChangeText={(text) => {
-          setStartQuery(text);
-          handleAutocomplete(text, 'start');
-        }}
-      />
+      <View style={styles.row}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon1 name="arrow-back-ios" size={20} color="black" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Plan your journey</Text>
+      </View>
+
+      <View style={styles.locationRow}>
+        <Icon name="circle" size={10} color="#0fa4e9" />
+        <TextInput
+          style={styles.input}
+          value={startQuery}
+          placeholder="Start Location"
+          onChangeText={text => {
+            setStartQuery(text);
+            handleAutocomplete(text, 'start');
+          }}
+        />
+      </View>
+      
+
+      <View style={styles.locationRow}>
+      <Icon name="circle" size={10} color="#f53f5f" />
       <TextInput
         style={styles.input}
         value={destQuery}
         placeholder="Destination"
-        onChangeText={(text) => {
+        onChangeText={text => {
           setDestQuery(text);
           handleAutocomplete(text, 'dest');
         }}
       />
 
+      </View>
+
+      
+
       <FlatList
         data={suggestions}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => selectLocation(item)} style={styles.suggestion}>
+        keyExtractor={item => item.id}
+        renderItem={({item}) => (
+          <TouchableOpacity
+            onPress={() => selectLocation(item)}
+            style={styles.suggestion}>
             <Text>{item.address.freeformAddress}</Text>
           </TouchableOpacity>
         )}
       />
 
-      {loading && <ActivityIndicator size="large" color="#2196F3" style={{ marginVertical: 10 }} />}
+      {loading && (
+        <ActivityIndicator
+          size="large"
+          color="#2196F3"
+          style={{marginVertical: 10}}
+        />
+      )}
 
       <View style={styles.buttonRow}>
-        <Button title="Get Info" onPress={getRouteInfo} disabled={loading} />
-        <Button title="View Map" onPress={handleViewMap} disabled={loading || !chargingStations.length} />
+        <Button
+          color="#0ea4e8"
+          title="Get Info"
+          onPress={getRouteInfo}
+          disabled={loading}
+        />
+        <Button
+          title="View Map"
+          onPress={handleViewMap}
+          disabled={loading || !chargingStations.length}
+        />
       </View>
 
       {info && (
@@ -214,12 +259,34 @@ const RoutingTest = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 15, flex: 1 },
+  container: {padding: 15, flex: 1},
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    marginBottom: 15,
+  },
+  title: {
+    fontSize: 20,
+    marginLeft: 10,
+    fontWeight: 'bold',
+    color: 'black',
+  },
+  locationRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 5,
+    marginBottom: 10,
+  },
+
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
-    marginBottom: 10,
+    paddingVertical: 12,
+    marginLeft: 10,
+    width: '90%',
     borderRadius: 8,
   },
   suggestion: {

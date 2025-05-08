@@ -16,6 +16,10 @@ import HomeScreen from './src/Screens/HomeScreen';
 import BookingScreen from './src/Screens/BookingScreen';
 import RoutingTest from './src/Screens/RoutingTest';
 import MapViewScreen from './src/Screens/MapViewScreen';
+import MyBookings from './src/Screens/MyBookings';
+import BookingDetails from './src/Screens/BookingDetails';
+import EVRecommendationScreen from './src/Screens/EVRecommendationScreen';
+import EVRecommendationScreen2 from './src/Screens/EVRecommendationScreen2';
 
 function App() {
   const Stack = createNativeStackNavigator();
@@ -25,6 +29,7 @@ function App() {
     <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
+            
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Register" component={Register} />
           <Stack.Screen name="Dashboard" component={Dashboard} />
@@ -37,6 +42,12 @@ function App() {
           <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
           <Stack.Screen name="RoutingTest" component={RoutingTest} />
           <Stack.Screen name="MapViewScreen" component={MapViewScreen} />
+          <Stack.Screen name="MyBookings" component={MyBookings} />
+          <Stack.Screen name="BookingDetails" component={BookingDetails} />
+
+          <Stack.Screen name="EVRecommendationScreen" component={EVRecommendationScreen} />
+          <Stack.Screen name="EVRecommendationScreen2" component={EVRecommendationScreen2} />
+       
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>
